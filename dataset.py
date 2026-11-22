@@ -37,9 +37,3 @@ class Dataset:
         print(f"Number of chunks: {len(self.chunks)}")
 
         return self.chunks
-
-if __name__ == "__main__":
-    dataset = Dataset()
-    dataset.load_hotpot()
-    chunks = dataset.create_chunks()
-    print(len(chunks))
