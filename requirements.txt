@@ -3,3 +3,6 @@ pandas
 chromadb
 sentence-transformers
 tqdm
+huggingface_hub
+pyarrow
+torch

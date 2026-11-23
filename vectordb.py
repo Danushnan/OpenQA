@@ -1,31 +1,93 @@
-import chromadb
+import gc
 import time
+import chromadb
+import torch
+from sentence_transformers import SentenceTransformer
 from tqdm import tqdm
-from dataset import Dataset
-from chromadb.utils.embedding_functions import SentenceTransformerEmbeddingFunction
+
 
 class VectorDB:
-    def __init__(self):
+
+    def __init__(self, model_name: str = "BAAI/bge-large-en-v1.5"):
         self.client = chromadb.PersistentClient(path="./vectordb")
-        self.embedding_function = SentenceTransformerEmbeddingFunction(model_name="sentence-transformers/multi-qa-MiniLM-L6-cos-v1")
-        self.collection = self.client.get_or_create_collection(name="hotpot", embedding_function=self.embedding_function)
+        self.model = SentenceTransformer(
+            model_name,
+            device="cuda",
+            model_kwargs={"torch_dtype": torch.float16},
+        )
+        self.collection = self.client.get_or_create_collection(
+            name="hotpot",
+            metadata={"hnsw:space": "cosine"},
+        )
 
-    def add_chunks(self, chunks: list[dict]) -> None:
+    def add_chunks(
+        self,
+        chunks: list[dict],
+        gpu_batch_size: int = 128,
+        db_batch_size: int = 5000,
+    ) -> None:
         start = time.perf_counter()
-        batch_size = 250
 
-        progress_bar = tqdm(total=len(chunks), desc="Adding Chunks to VectorDB", unit="chunks")
+        # Sort indices by text length to eliminate GPU padding waste
+        sorted_indices = sorted(
+            range(len(chunks)),
+            key=lambda idx: len(chunks[idx]["title"])
+            + sum(map(len, chunks[idx]["sentences"])),
+        )
 
-        for i in range(0, len(chunks), batch_size):
-            batch = chunks[i:i + batch_size]
+        progress_bar = tqdm(
+            total=len(sorted_indices),
+            desc="Indexing HotpotQA",
+            unit="chunks",
+        )
 
-            ids = [str(chunk["id"]) for chunk in batch]
-            documents = [f"Title: {chunk['title']}\nSentences: {' '.join(chunk['sentences'])}" for chunk in batch]
-            metadatas = [{"title": chunk["title"]} for chunk in batch]
+        for i in range(0, len(sorted_indices), db_batch_size):
+            batch_idx = sorted_indices[i : i + db_batch_size]
+            candidate_ids = [str(chunks[idx]["id"]) for idx in batch_idx]
 
-            self.collection.add(ids=ids, documents=documents, metadatas=metadatas)
-            progress_bar.update(len(batch))
+            existing_ids = set(
+                self.collection.get(ids=candidate_ids, include=[])["ids"]
+            )
+            filtered_idx = [
+                idx
+                for idx in batch_idx
+                if str(chunks[idx]["id"]) not in existing_ids
+            ]
+
+            if not filtered_idx:
+                progress_bar.update(len(batch_idx))
+                continue
+
+            ids = [str(chunks[idx]["id"]) for idx in filtered_idx]
+            documents = [
+                f"Title: {chunks[idx]['title']}\nSentences: {' '.join(chunks[idx]['sentences'])}"
+                for idx in filtered_idx
+            ]
+            metadatas = [{"title": chunks[idx]["title"]} for idx in filtered_idx]
+
+            with torch.inference_mode():
+                embeddings = self.model.encode(
+                    documents,
+                    batch_size=gpu_batch_size,
+                    normalize_embeddings=True,
+                    show_progress_bar=False,
+                ).tolist()
+
+            torch.cuda.empty_cache()
+
+            self.collection.add(
+                ids=ids,
+                embeddings=embeddings,
+                documents=documents,
+                metadatas=metadatas,
+            )
+
+            del ids, documents, metadatas, embeddings
+            progress_bar.update(len(batch_idx))
 
         progress_bar.close()
+        gc.collect()
         elapsed = time.perf_counter() - start
-        print(f"Adding and Embedding chunks took {elapsed:.2f} seconds")
+        print(
+            f"Done! Total collection count: {self.collection.count()} (took {elapsed:.2f}s)"
+        )
