@@ -12,7 +12,7 @@ class VectorDB:
         self.client = chromadb.PersistentClient(path="./vectordb")
         self.model = SentenceTransformer(
             model_name,
-            device="cuda",
+            device="cuda" if torch.cuda.is_available() else "cpu",
             model_kwargs={"torch_dtype": torch.float16},
         )
         self.collection = self.client.get_or_create_collection(
@@ -91,3 +91,29 @@ class VectorDB:
         print(
             f"Done! Total collection count: {self.collection.count()} (took {elapsed:.2f}s)"
         )
+
+    def query_db(
+        self,
+        query: str,
+        n_results: int = 3
+    ) -> list[dict]:
+        
+        with torch.inference_mode():
+            embeddings = self.model.encode(
+                query,
+                normalize_embeddings=True
+            ).tolist()
+
+        torch.cuda.empty_cache()
+
+        results = self.collection.query(
+            query_embeddings=embeddings,
+            n_results=n_results
+        )
+
+        return [
+            {"id": results["ids"][0][index],
+             "distances": results["distances"][0][index],
+             "documents": results["documents"][0][index]
+             }
+            for index in range(n_results)]

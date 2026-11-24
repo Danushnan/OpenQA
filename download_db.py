@@ -21,9 +21,9 @@ print(f"Restoring {total_records} chunks into local ChromaDB.")
 for i in range(0, total_records, BATCH_SIZE):
     batch = dataset.select(range(i, min(i + BATCH_SIZE, total_records)))
     
-    ids = batch["id"]
-    documents = batch["document"]
-    embeddings = batch["embedding"]
+    ids = list(batch["id"])
+    documents = list(batch["document"])
+    embeddings = list(batch["embedding"])
     
     metadatas = [ast.literal_eval(m) if isinstance(m, str) else m for m in batch["metadata"]]
     
