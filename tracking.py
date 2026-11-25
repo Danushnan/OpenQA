@@ -8,6 +8,12 @@ FIELDNAMES = [
     "out_tok", "tot_toks", "cumulative_toks"
     ]
 
+# Model: (input price per million tokens, output price per million tokens)
+PRICES = {
+    "ministral-3b-latest": (0.1, 0.1)
+}
+
+
 def get_last_cumulative_tokens(filepath: str) -> int:
     if not os.path.exists(filepath) or os.path.getsize(filepath) == 0:
         return 0
@@ -51,3 +57,22 @@ def log_tokens(
         }
 
         writer.writerow(to_write)
+
+def estimate_price(path=FILE_PATH) -> float:
+    total_cost = 0
+    with open(path, "r", newline="") as f:
+        reader = csv.DictReader(f)
+
+        for row in reader:
+            model = row["model"]
+            in_tok = int(row["in_tok"])
+            out_tok = int(row["out_tok"])
+
+            total_input += in_tok
+            total_output += out_tok
+
+            input_price, output_price = PRICES[model]
+
+            total_cost += (in_tok * input_price + out_tok * output_price) / 1_000_000
+
+    return total_cost
