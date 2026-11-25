@@ -1,6 +1,7 @@
 import os
 from settings import settings
 from mistralai.client import Mistral
+from tracking import log_tokens
 
 class LLM:
     def __init__(self, model="ministral-3b-latest"):
@@ -18,5 +19,6 @@ class LLM:
                     }
                 ]
             )
+        log_tokens(model=self.model, prompt=message, response=response)
         return response.choices[0].message.content
     

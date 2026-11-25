@@ -1,6 +1,6 @@
 from dataset import Dataset
 from vectordb import VectorDB
-
+from llm import LLM
 
 def main():
     print("Initialising VectorDB")
