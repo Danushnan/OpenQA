@@ -3,10 +3,7 @@ import csv
 from collections import deque
 
 FILE_PATH = "token_logs.csv"
-FIELDNAMES = [
-    "model", "prompt", "response", "in_tok", 
-    "out_tok", "tot_toks", "cumulative_toks"
-    ]
+FIELDNAMES = ["model", "in_tok", "out_tok", "tot_toks", "cumulative_toks"]
 
 # Model: (input price per million tokens, output price per million tokens)
 PRICES = {
@@ -28,7 +25,6 @@ def get_last_cumulative_tokens(filepath: str) -> int:
 
 def log_tokens(
         model: str, 
-        prompt: str, 
         response: str
     ) -> None:    
     file_exists = os.path.exists(FILE_PATH) and os.path.getsize(FILE_PATH) > 0
@@ -48,8 +44,6 @@ def log_tokens(
 
         to_write = {
             "model": model,
-            "prompt": prompt,
-            "response": llm_response,
             "in_tok": in_token,
             "out_tok": out_token,
             "tot_toks": total_tokens,

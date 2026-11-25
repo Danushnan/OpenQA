@@ -8,7 +8,7 @@ class LLM:
         self.model = model
         
 
-    def response(self, message: str):
+    def response(self, message: str, question_id: str):
         with Mistral(api_key=settings.MISTRAL_API_KEY) as mistral:
             response = mistral.chat.complete(
                 model=self.model,
@@ -19,6 +19,6 @@ class LLM:
                     }
                 ]
             )
-        log_tokens(model=self.model, prompt=message, response=response)
+        log_tokens(model=self.model, response=response)
         return response.choices[0].message.content
     
