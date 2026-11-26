@@ -1,6 +1,8 @@
 import os
 import csv
+import json
 from collections import deque
+from functools import reduce
 
 FILE_PATH = "token_logs.csv"
 FIELDNAMES = ["model", "in_tok", "out_tok", "tot_toks", "cumulative_toks"]
@@ -56,6 +58,9 @@ def estimate_price(path=FILE_PATH) -> float:
     total_cost = 0
     with open(path, "r", newline="") as f:
         reader = csv.DictReader(f)
+        
+        total_input = 0
+        total_output = 0
 
         for row in reader:
             model = row["model"]
@@ -70,3 +75,19 @@ def estimate_price(path=FILE_PATH) -> float:
             total_cost += (in_tok * input_price + out_tok * output_price) / 1_000_000
 
     return total_cost
+
+def save_run(data):
+    os.makedirs("Experiments", exist_ok=True)
+    runs = os.listdir("Experiments")
+
+    if runs:
+        last_experiment_number = max(int(run.replace(".json", "").split("_")[-1]) for run in runs)
+        path = f"Experiments/Experiments_{last_experiment_number+1}.json"
+    else:
+        path = "Experiments/Experiments_1.json"
+
+    with open(path, "w") as f:
+        json.dump(data, f, indent=3)
+
+if __name__ == "__main__":
+    print(estimate_price())
