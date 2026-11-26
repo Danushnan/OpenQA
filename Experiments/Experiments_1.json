@@ -1,0 +1,33 @@
+{
+   "configuration": {
+      "top_k": 3,
+      "retrieval_model": "BAAI/bge-large-en-v1.5",
+      "llm_model": "ministral-3b-latest"
+   },
+   "runs": [
+      {
+         "id": "5a7a06935542990198eaf050",
+         "question": "Which magazine was started first Arthur's Magazine or First for Women?",
+         "ground_truth": "Arthur's Magazine",
+         "response": "Arthur's Lady's Home Magazine",
+         "retrieved_documents": [
+            {
+               "id": "7",
+               "distances": 0.27990198135375977,
+               "documents": "Title: First for Women\nSentences: First for Women is a woman's magazine published by Bauer Media Group in the USA.  The magazine was started in 1989.  It is based in Englewood Cliffs, New Jersey.  In 2011 the circulation of the magazine was 1,310,696 copies."
+            },
+            {
+               "id": "23282",
+               "distances": 0.35450267791748047,
+               "documents": "Title: Arthur's Lady's Home Magazine\nSentences: Arthur's Home Magazine (1852-ca.1898) or Ladies' Home Magazine was an American periodical published in Philadelphia by Timothy Shay Arthur.  Editors Arthur and Virginia Francis Townsend selected writing and illustrations intended to appeal to female readers.  Among the contributors: Mary Tyler Peabody Mann and Kate Sutherland.  In its early years the monthly comprised a selection of articles originally published in Arthur's weekly \"Home Gazette.\"  Its nonfiction stories contained occasional factual inaccuracies for the sake of a good read.  A contemporary review judged it \"gotten up in good taste and well; and is in nothing overdone.  Even its fashion plates are not quite such extravagant caricatures of rag-baby work as are usually met with in some of the more fancy magazines.\"  Readers included patrons of the Mercantile Library Association of San Francisco."
+            },
+            {
+               "id": "180081",
+               "distances": 0.356306254863739,
+               "documents": "Title: Arthur (magazine)\nSentences: Arthur magazine was a bi-monthly periodical that was founded in October 2002, by publisher Laris Kreslins and editor Jay Babcock.  It received favorable attention from other periodicals such as \"L.A. Weekly\", \"Print\", \"Punk Planet\" and \"Rolling Stone\".  \"Arthur\" featured photography and artwork from Spike Jonze, Art Spiegelman, Susannah Breslin, Gary Panter and Godspeed You!  Black Emperor.  Arthur's regular columnists included Byron Coley, Thurston Moore, Daniel Pinchbeck, Paul Cullum, Douglas Rushkoff, and T-Model Ford."
+            }
+         ],
+         "prompt": "\n            You are a question-answering assistant.\n\n            Answer the question using only the provided context.\n\n            Instructions:\n            - Combine information from multiple documents when necessary.\n            - Do not make assumptions or introduce unsupported information.\n            - If the context is insufficient, answer \"I don't know\".\n            - Keep your answer concise.\n            - Return only the answer, without explanations.\n\n            Context:\n            Document 1:\nTitle: First for Women\nSentences: First for Women is a woman's magazine published by Bauer Media Group in the USA.  The magazine was started in 1989.  It is based in Englewood Cliffs, New Jersey.  In 2011 the circulation of the magazine was 1,310,696 copies.\n\nDocument 2:\nTitle: Arthur's Lady's Home Magazine\nSentences: Arthur's Home Magazine (1852-ca.1898) or Ladies' Home Magazine was an American periodical published in Philadelphia by Timothy Shay Arthur.  Editors Arthur and Virginia Francis Townsend selected writing and illustrations intended to appeal to female readers.  Among the contributors: Mary Tyler Peabody Mann and Kate Sutherland.  In its early years the monthly comprised a selection of articles originally published in Arthur's weekly \"Home Gazette.\"  Its nonfiction stories contained occasional factual inaccuracies for the sake of a good read.  A contemporary review judged it \"gotten up in good taste and well; and is in nothing overdone.  Even its fashion plates are not quite such extravagant caricatures of rag-baby work as are usually met with in some of the more fancy magazines.\"  Readers included patrons of the Mercantile Library Association of San Francisco.\n\nDocument 3:\nTitle: Arthur (magazine)\nSentences: Arthur magazine was a bi-monthly periodical that was founded in October 2002, by publisher Laris Kreslins and editor Jay Babcock.  It received favorable attention from other periodicals such as \"L.A. Weekly\", \"Print\", \"Punk Planet\" and \"Rolling Stone\".  \"Arthur\" featured photography and artwork from Spike Jonze, Art Spiegelman, Susannah Breslin, Gary Panter and Godspeed You!  Black Emperor.  Arthur's regular columnists included Byron Coley, Thurston Moore, Daniel Pinchbeck, Paul Cullum, Douglas Rushkoff, and T-Model Ford.\n\n            Question:\n            Which magazine was started first Arthur's Magazine or First for Women?\n\n            Answer:\n            "
+      }
+   ]
+}
