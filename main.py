@@ -3,6 +3,9 @@ from vectordb import VectorDB
 from llm import LLM
 from tracking import save_run
 
+NUM_RUNS = 100
+TOP_K = 3
+
 def main():
     print("Initialising VectorDB")
     db = VectorDB()
@@ -24,9 +27,9 @@ def main():
         print("All chunks already indexed!")
 
     runs = []
-    sample = dataset.df_train.iloc[:1]
+    sample = dataset.df_train.iloc[:NUM_RUNS]
     for id, question, ground_truth in zip(sample["id"], sample["question"], sample["answer"]):
-        answers = db.query_db(query=question, n_results=3)
+        answers = db.query_db(query=question, n_results=TOP_K)
         context = "\n\n".join(
             f"Document {index + 1}:\n{answer["documents"]}"
             for index, answer in enumerate(answers)
